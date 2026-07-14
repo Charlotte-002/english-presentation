@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 1 - Daily Vocabulary</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="nav"></div>
+
+  <div class="container">
+    <h1 class="page-title">Daily Vocabulary</h1>
+    <p class="page-sub" id="todayDate"></p>
+
+    <div class="card">
+      <p style="color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em;">Word of the Day</p>
+      <div class="word-display" id="word"></div>
+      <div class="phonetic" id="phonetic"></div>
+
+      <div class="meaning-box">
+        <strong>Definition</strong>
+        <p id="meaning" style="margin-top: 8px;"></p>
+      </div>
+
+      <p style="margin-top: 20px; font-weight: 600;">Example Sentence</p>
+      <div class="sentence-box" id="sentence"></div>
+
+      <button class="btn btn-primary" id="speakBtn" style="margin-top: 20px;">Listen (Text-to-Speech)</button>
+      <button class="btn btn-success" id="doneBtn" style="margin-top: 20px; margin-left: 8px;">Mark as Learned</button>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById("nav").innerHTML = renderNav("m1");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    const c = getTodayContent();
+    document.getElementById("todayDate").textContent = formatDisplayDate();
+    document.getElementById("word").textContent = c.word;
+    document.getElementById("phonetic").textContent = c.phonetic;
+    document.getElementById("meaning").textContent = c.meaning;
+    document.getElementById("sentence").textContent = '"' + c.sentence + '"';
+
+    document.getElementById("speakBtn").addEventListener("click", () => {
+      const u = new SpeechSynthesisUtterance(c.word + ". " + c.sentence);
+      u.lang = "en-US";
+      u.rate = 0.9;
+      speechSynthesis.speak(u);
+    });
+
+    document.getElementById("doneBtn").addEventListener("click", () => {
+      ModuleProgress.markDone("m1");
+      document.getElementById("doneBtn").textContent = "Learned Today!";
+      document.getElementById("doneBtn").disabled = true;
+    });
+
+    if (ModuleProgress.isDone("m1")) {
+      document.getElementById("doneBtn").textContent = "Already Learned Today";
+      document.getElementById("doneBtn").disabled = true;
+    }
+  </script>
+</body>
+</html>
