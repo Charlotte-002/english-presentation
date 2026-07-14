@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 3 - Memorization</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="nav"></div>
+
+  <div class="container">
+    <h1 class="page-title">Memorization Passage</h1>
+    <p class="page-sub" id="todayDate"></p>
+
+    <div class="card">
+      <p class="hint-text">Today's word: <strong id="linkedWord"></strong></p>
+      <p class="hint-text" id="passageHint"></p>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
+        <button class="btn btn-ghost" id="toggleBtn">Hide Passage</button>
+        <button class="btn btn-ghost" id="speakBtn">Listen</button>
+        <button class="btn btn-success" id="doneBtn">Mark Memorized</button>
+      </div>
+
+      <div class="passage-text" id="passage"></div>
+
+      <div class="card" style="background: var(--surface2); margin-top: 20px;">
+        <p style="font-weight: 600; margin-bottom: 8px;">Self Test</p>
+        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">
+          Hide the passage above, then try to recite it out loud. Click reveal when you need a hint.
+        </p>
+        <button class="btn btn-primary" id="revealBtn">Reveal Passage</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById("nav").innerHTML = renderNav("m3");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    const c = getTodayContent();
+    document.getElementById("todayDate").textContent = formatDisplayDate();
+    document.getElementById("linkedWord").textContent = c.word;
+    document.getElementById("passageHint").textContent = "Hint: " + c.passageHint;
+    document.getElementById("passage").textContent = c.passage;
+
+    const passageEl = document.getElementById("passage");
+    let hidden = false;
+
+    document.getElementById("toggleBtn").addEventListener("click", () => {
+      hidden = !hidden;
+      passageEl.classList.toggle("hidden", hidden);
+      document.getElementById("toggleBtn").textContent = hidden ? "Show Passage" : "Hide Passage";
+    });
+
+    document.getElementById("revealBtn").addEventListener("click", () => {
+      hidden = false;
+      passageEl.classList.remove("hidden");
+      document.getElementById("toggleBtn").textContent = "Hide Passage";
+    });
+
+    document.getElementById("speakBtn").addEventListener("click", () => {
+      const u = new SpeechSynthesisUtterance(c.passage);
+      u.lang = "en-US";
+      u.rate = 0.85;
+      speechSynthesis.speak(u);
+    });
+
+    document.getElementById("doneBtn").addEventListener("click", () => {
+      ModuleProgress.markDone("m3");
+      document.getElementById("doneBtn").textContent = "Memorized Today!";
+      document.getElementById("doneBtn").disabled = true;
+    });
+
+    if (ModuleProgress.isDone("m3")) {
+      document.getElementById("doneBtn").textContent = "Already Done Today";
+      document.getElementById("doneBtn").disabled = true;
+    }
+  </script>
+</body>
+</html>
