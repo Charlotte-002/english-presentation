@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 3 - Memorization Passage</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="nav"></div>
+
+  <div class="container">
+    <div class="page-header-wrap">
+      <div class="page-back-strip">
+        <a href="index.html" class="page-back">← Home</a>
+      </div>
+      <h1 class="page-title">Memorization Passage</h1>
+    </div>
+    <p class="page-sub" id="todayDate"></p>
+
+    <div class="card">
+      <p class="hint-text">Theme: <strong id="theme"></strong></p>
+      <p class="hint-text">Day <span id="dayNum"></span> / 100 · 5 core words in Module 1</p>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
+        <button class="btn btn-ghost" id="toggleBtn">Hide Passage</button>
+        <button class="btn btn-ghost" id="toggleZhBtn">Show Chinese</button>
+        <button class="btn btn-ghost" id="speakBtn">Listen</button>
+        <button class="btn btn-ghost" id="dictationBtn">Dictation</button>
+        <button class="btn btn-success" id="doneBtn">Mark Memorized</button>
+      </div>
+
+      <div class="passage-text" id="passage"></div>
+      <div class="passage-text hidden" id="passageZh" style="margin-top:12px;color:var(--muted);"></div>
+
+      <div class="card dictation-panel hidden" id="dictationPanel" style="background: var(--surface2); margin-top: 20px;">
+        <p style="font-weight: 600; margin-bottom: 8px;">Dictation</p>
+        <p class="hint-text" style="margin-bottom: 12px;">
+          Type what you remember, then click Check to compare with the original.
+        </p>
+        <textarea class="dictation-input" id="dictationInput" rows="6" placeholder="Type the passage here..."></textarea>
+        <div class="dictation-actions">
+          <button class="btn btn-primary" id="checkDictationBtn">Check Dictation</button>
+          <button class="btn btn-ghost" id="clearDictationBtn">Clear</button>
+        </div>
+        <div class="dictation-result hidden" id="dictationResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById("nav").innerHTML = renderNav("m3");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    const c = getTodayCorpus();
+    document.getElementById("todayDate").textContent = formatDisplayDate();
+    document.getElementById("theme").textContent = c.theme;
+    document.getElementById("dayNum").textContent = c.day;
+    document.getElementById("passage").textContent = c.paragraphEn;
+    document.getElementById("passageZh").textContent = c.paragraphZh;
+
+    const passageEl = document.getElementById("passage");
+    const zhEl = document.getElementById("passageZh");
+    const dictationPanel = document.getElementById("dictationPanel");
+    const dictationBtn = document.getElementById("dictationBtn");
+    const toggleBtn = document.getElementById("toggleBtn");
+    let hidden = false;
+    let dictationActive = false;
+
+    function setPassageHidden(isHidden) {
+      hidden = isHidden;
+      passageEl.classList.toggle("hidden", hidden);
+      toggleBtn.textContent = hidden ? "Show Passage" : "Hide Passage";
+    }
+
+    document.getElementById("toggleBtn").addEventListener("click", function() {
+      setPassageHidden(!hidden);
+    });
+
+    document.getElementById("toggleZhBtn").addEventListener("click", function() {
+      zhEl.classList.toggle("hidden");
+      document.getElementById("toggleZhBtn").textContent =
+        zhEl.classList.contains("hidden") ? "Show Chinese" : "Hide Chinese";
+    });
+
+    dictationBtn.addEventListener("click", function() {
+      dictationActive = !dictationActive;
+      dictationPanel.classList.toggle("hidden", !dictationActive);
+      dictationBtn.classList.toggle("active", dictationActive);
+
+      if (dictationActive) {
+        setPassageHidden(true);
+        dictationBtn.textContent = "Exit Dictation";
+        document.getElementById("dictationInput").focus();
+      } else {
+        dictationBtn.textContent = "Dictation";
+        document.getElementById("dictationInput").value = "";
+        document.getElementById("dictationResult").classList.add("hidden");
+        document.getElementById("dictationResult").innerHTML = "";
+      }
+    });
+
+    function normalizeDictation(text) {
+      return text
+        .toLowerCase()
+        .replace(/[^\w\s']/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function checkDictation() {
+      const userText = document.getElementById("dictationInput").value.trim();
+      const resultEl = document.getElementById("dictationResult");
+
+      if (!userText) {
+        resultEl.classList.remove("hidden");
+        resultEl.innerHTML = '<p class="dictation-summary warn">Please type your dictation first.</p>';
+        return;
+      }
+
+      const expectedWords = normalizeDictation(c.paragraphEn).split(" ").filter(Boolean);
+      const userWords = normalizeDictation(userText).split(" ").filter(Boolean);
+      let correct = 0;
+      let html = '<div class="dictation-words">';
+
+      for (let i = 0; i < userWords.length; i++) {
+        const expected = expectedWords[i] || "";
+        const word = userWords[i];
+        if (expected && word === expected) {
+          correct++;
+          html += '<span class="dict-word correct">' + escapeHtml(word) + "</span> ";
+        } else {
+          const title = expected ? 'Expected: "' + expected + '"' : "Extra word";
+          html += '<span class="dict-word wrong" title="' + escapeHtml(title) + '">' + escapeHtml(word) + "</span> ";
+        }
+      }
+
+      if (userWords.length < expectedWords.length) {
+        const missing = expectedWords.slice(userWords.length);
+        html += '<span class="dict-missing">Missing: ' + escapeHtml(missing.join(" ")) + "</span>";
+      }
+
+      html += "</div>";
+      const accuracy = expectedWords.length
+        ? Math.round((correct / expectedWords.length) * 100)
+        : 0;
+      const summaryClass = accuracy >= 90 ? "good" : accuracy >= 70 ? "ok" : "warn";
+
+      resultEl.classList.remove("hidden");
+      resultEl.innerHTML =
+        '<p class="dictation-summary ' + summaryClass + '">Accuracy: <strong>' + accuracy + "%</strong> (" +
+        correct + " / " + expectedWords.length + " words correct)</p>" + html;
+    }
+
+    document.getElementById("checkDictationBtn").addEventListener("click", checkDictation);
+
+    document.getElementById("clearDictationBtn").addEventListener("click", function() {
+      document.getElementById("dictationInput").value = "";
+      document.getElementById("dictationResult").classList.add("hidden");
+      document.getElementById("dictationResult").innerHTML = "";
+    });
+
+    document.getElementById("speakBtn").addEventListener("click", function() {
+      const u = new SpeechSynthesisUtterance(c.paragraphEn);
+      u.lang = "en-US";
+      u.rate = 0.85;
+      speechSynthesis.speak(u);
+    });
+
+    document.getElementById("doneBtn").addEventListener("click", function() {
+      ModuleProgress.markDone("m3");
+      document.getElementById("doneBtn").textContent = "Memorized Today!";
+      document.getElementById("doneBtn").disabled = true;
+    });
+
+    if (ModuleProgress.isDone("m3")) {
+      document.getElementById("doneBtn").textContent = "Already Done Today";
+      document.getElementById("doneBtn").disabled = true;
+    }
+  </script>
+</body>
+</html>

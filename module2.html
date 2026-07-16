@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 2 - Presentation Practice</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="nav"></div>
+
+  <div class="container">
+    <div class="page-header-wrap">
+      <div class="page-back-strip">
+        <a href="index.html" class="page-back">← Home</a>
+      </div>
+      <h1 class="page-title">Presentation Practice</h1>
+    </div>
+    <p class="page-sub" id="todayDate"></p>
+
+    <div class="card">
+      <h2 id="theme" style="font-size: 1.2rem; margin-bottom: 6px;"></h2>
+      <p class="hint-text" id="themeDesc"></p>
+
+      <div class="scene-stage">
+        <div class="scene-bg" id="sceneBg"></div>
+        <div class="scene-bg scene-bg-fade" id="sceneBgFade"></div>
+        <button type="button" class="scene-nav-btn scene-nav-prev" id="scenePrev" aria-label="Previous background">&#8249;</button>
+        <button type="button" class="scene-nav-btn scene-nav-next" id="sceneNext" aria-label="Next background">&#8250;</button>
+        <div class="scene-dots" id="sceneDots"></div>
+      </div>
+
+      <div class="timer-display" id="timer">00:00</div>
+
+      <div class="controls">
+        <button class="btn btn-danger" id="recordBtn">Start Presenting</button>
+        <button class="btn btn-ghost" id="stopBtn" disabled>Stop</button>
+        <button class="btn btn-ghost" id="clearBtn">Clear Text</button>
+        <button class="btn btn-primary" id="reviewBtn" disabled>Smart Review</button>
+        <button class="btn btn-success" id="doneBtn">Mark Complete</button>
+      </div>
+
+      <p style="font-weight: 600; margin-bottom: 8px;">Live Transcript</p>
+      <div class="transcript-box empty" id="transcript">Your speech will appear here as you speak...</div>
+
+      <div class="feedback-panel hidden" id="feedbackPanel">
+        <p style="font-weight: 600; margin-bottom: 12px;">Smart Feedback</p>
+        <div id="feedbackContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/module2.js"></script>
+</body>
+</html>

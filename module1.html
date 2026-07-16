@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 1 - Daily Workplace Words</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="nav"></div>
+
+  <div class="container">
+    <div class="page-header-wrap">
+      <div class="page-back-strip">
+        <a href="index.html" class="page-back">← Home</a>
+      </div>
+      <h1 class="page-title">Daily Workplace Words</h1>
+    </div>
+    <p class="page-sub" id="todayDate"></p>
+
+    <div class="card" style="margin-bottom: 16px;">
+      <p class="hint-text">Theme: <strong id="theme"></strong></p>
+      <p class="hint-text">Day <span id="dayNum"></span> / 100</p>
+    </div>
+
+    <div class="card" id="wordCard">
+      <p class="word-step" id="wordStep">Word 1 of 5</p>
+      <div class="word-display" id="wordText"></div>
+      <div class="phonetic" id="wordPhonetic"></div>
+      <div class="meaning-box">
+        <strong>Definition</strong>
+        <p id="wordMeaning" style="margin-top: 8px;"></p>
+      </div>
+
+      <div class="word-nav-buttons">
+        <button class="btn btn-primary" id="listenBtn">Listen</button>
+        <div class="word-nav-right">
+          <button class="btn btn-ghost" id="nextBtn">Next</button>
+          <button class="btn btn-success" id="reviewBtn" style="display: none;">Review</button>
+        </div>
+      </div>
+
+      <div class="set-dots" id="wordDots"></div>
+    </div>
+
+    <div class="card" id="reviewCard" style="display: none; margin-top: 16px;">
+      <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Review — Today's 5 Words</h2>
+      <div id="reviewList"></div>
+      <button class="btn btn-success" id="doneBtn" style="margin-top: 20px;">Mark as Learned</button>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById("nav").innerHTML = renderNav("m1");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    const c = getTodayCorpus();
+    const words = c.words;
+    let index = 0;
+
+    document.getElementById("todayDate").textContent = formatDisplayDate();
+    document.getElementById("theme").textContent = c.theme;
+    document.getElementById("dayNum").textContent = c.day;
+
+    const wordStep = document.getElementById("wordStep");
+    const wordText = document.getElementById("wordText");
+    const wordPhonetic = document.getElementById("wordPhonetic");
+    const wordMeaning = document.getElementById("wordMeaning");
+    const nextBtn = document.getElementById("nextBtn");
+    const reviewBtn = document.getElementById("reviewBtn");
+    const listenBtn = document.getElementById("listenBtn");
+    const wordDots = document.getElementById("wordDots");
+    const reviewCard = document.getElementById("reviewCard");
+    const wordCard = document.getElementById("wordCard");
+
+    function renderDots() {
+      wordDots.innerHTML = "";
+      for (let i = 0; i < words.length; i++) {
+        const dot = document.createElement("span");
+        dot.className = "set-dot" + (i === index ? " active" : "") + (i < index ? " done" : "");
+        wordDots.appendChild(dot);
+      }
+    }
+
+    function showWord(i) {
+      const w = words[i];
+      wordStep.textContent = "Word " + (i + 1) + " of " + words.length;
+      wordText.textContent = w.word;
+      wordPhonetic.innerHTML = w.phonetic + (w.pos ? ' <span style="color:var(--accent);">' + w.pos + "</span>" : "");
+      wordMeaning.textContent = w.meaning;
+
+      const isLast = i === words.length - 1;
+      nextBtn.style.display = isLast ? "none" : "inline-flex";
+      reviewBtn.style.display = isLast ? "inline-flex" : "none";
+
+      renderDots();
+    }
+
+    function speakCurrent() {
+      const w = words[index];
+      const u = new SpeechSynthesisUtterance(w.word);
+      u.lang = "en-US";
+      u.rate = 0.9;
+      speechSynthesis.speak(u);
+    }
+
+    function openReview() {
+      const list = document.getElementById("reviewList");
+      list.innerHTML = words.map(function(w, i) {
+        return (
+          '<div class="review-item">' +
+          '<span class="review-num">' + (i + 1) + '</span>' +
+          '<div><strong>' + w.word + '</strong> ' + w.phonetic +
+          '<p style="color:var(--muted);margin-top:4px;font-size:0.9rem;">' + w.meaning + '</p></div>' +
+          '</div>'
+        );
+      }).join("");
+      reviewCard.style.display = "block";
+      index = 0;
+      showWord(0);
+      wordCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    listenBtn.addEventListener("click", speakCurrent);
+
+    nextBtn.addEventListener("click", function() {
+      if (index < words.length - 1) {
+        index++;
+        showWord(index);
+      }
+    });
+
+    reviewBtn.addEventListener("click", openReview);
+
+    document.getElementById("doneBtn").addEventListener("click", function() {
+      ModuleProgress.markDone("m1");
+      document.getElementById("doneBtn").textContent = "Learned!";
+      document.getElementById("doneBtn").disabled = true;
+    });
+
+    if (ModuleProgress.isDone("m1")) {
+      document.getElementById("doneBtn").textContent = "Already Learned";
+      document.getElementById("doneBtn").disabled = true;
+    }
+
+    showWord(0);
+  </script>
+</body>
+</html>
